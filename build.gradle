@@ -58,5 +58,7 @@ project(":core") {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
         compile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+        compile "com.google.inject:guice:4.2.1"
+        compile "com.badlogicgames.ashley:ashley:1.7.0"
     }
 }
