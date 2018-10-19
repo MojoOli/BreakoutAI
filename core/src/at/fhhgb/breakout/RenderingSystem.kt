@@ -4,9 +4,12 @@ import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.Family
 import com.badlogic.ashley.systems.IteratingSystem
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.google.inject.Inject
 
 class RenderingSystem @Inject constructor(private val batch: SpriteBatch) : IteratingSystem(Family.all(ColorComponent::class.java, TransformComponent::class.java, SizeComponent::class.java).get()){
+    private val shapeRenderer = ShapeRenderer()
+
     override fun update(deltaTime: Float) {
         batch.begin()
         super.update(deltaTime)
@@ -20,6 +23,9 @@ class RenderingSystem @Inject constructor(private val batch: SpriteBatch) : Iter
         val width = entity.getComponent(SizeComponent::class.java).width
         val height = entity.getComponent(SizeComponent::class.java).height
 
-        // todo: draw entity
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled)
+        shapeRenderer.color = color
+        shapeRenderer.rect(position.x + 0f, position.y + 0f, width, height)
+        shapeRenderer.end()
     }
 }

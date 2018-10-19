@@ -8,4 +8,4 @@ class ColorComponent(val color: Color) : Component
 
 class TransformComponent(val position: Vector2) : Component
 
-class SizeComponent(val width: Int, val height: Int) : Component
+class SizeComponent(val width: Float, val height: Float) : Component
