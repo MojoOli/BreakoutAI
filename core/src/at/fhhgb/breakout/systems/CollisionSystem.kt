@@ -2,6 +2,7 @@ package at.fhhgb.breakout.systems
 
 import at.fhhgb.breakout.BricksComponent
 import at.fhhgb.breakout.PhysicsComponent
+import at.fhhgb.breakout.State
 import com.badlogic.ashley.core.Entity
 import com.badlogic.ashley.core.Family
 import com.badlogic.ashley.systems.IteratingSystem
@@ -11,6 +12,7 @@ import com.google.inject.Inject
 class CollisionSystem @Inject constructor(private val world: World) : IteratingSystem(Family.all(BricksComponent::class.java, PhysicsComponent::class.java).get()) {
     private var collisionBodyA: Body? = null
     private var collisionBodyB: Body? = null
+    private var bricksCount = -1
 
     init {
         world.setContactListener(object : ContactListener {
@@ -34,5 +36,14 @@ class CollisionSystem @Inject constructor(private val world: World) : IteratingS
             collisionBodyB = null
             return
         }
+        bricksCount++
+    }
+
+    override fun update(deltaTime: Float) {
+        if(bricksCount == 0){
+            engine.getSystem(StateSystem::class.java).state = State.Finished
+        }
+        bricksCount = 0
+        super.update(deltaTime)
     }
 }

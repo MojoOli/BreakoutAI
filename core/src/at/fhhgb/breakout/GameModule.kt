@@ -32,7 +32,7 @@ class GameModule(private val game: Game) : Module {
         return Systems(listOf(
                 PlayerControllerSystem::class.java,
                 PhysicsSystem::class.java,
-                GameOverSystem::class.java,
+                StateSystem::class.java,
                 CollisionSystem::class.java,
                 PhysicsSynchronizationSystem::class.java,
                 RenderingSystem::class.java,

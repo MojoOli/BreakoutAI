@@ -1,6 +1,6 @@
 package at.fhhgb.breakout
 
-import at.fhhgb.breakout.systems.GameOverSystem
+import at.fhhgb.breakout.systems.StateSystem
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
 import com.badlogic.gdx.ApplicationAdapter
@@ -148,7 +148,7 @@ open class Game : ApplicationAdapter() {
     }
 
     override fun render() {
-        if(!engine.getSystem(GameOverSystem::class.java).isGameOver) {
+        if(engine.getSystem(StateSystem::class.java).state == State.Running) {
             Gdx.gl.glClearColor(1f, 1f, 1f, 1f)
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
             engine.update(Gdx.graphics.deltaTime)
