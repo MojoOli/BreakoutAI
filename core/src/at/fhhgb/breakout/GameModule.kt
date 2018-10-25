@@ -30,9 +30,10 @@ class GameModule(private val game: Game) : Module {
     @Singleton
     fun systems(): Systems {
         return Systems(listOf(
+                StateSystem::class.java,
+                AIControllerSystem::class.java,
                 PlayerControllerSystem::class.java,
                 PhysicsSystem::class.java,
-                StateSystem::class.java,
                 CollisionSystem::class.java,
                 PhysicsSynchronizationSystem::class.java,
                 RenderingSystem::class.java,
