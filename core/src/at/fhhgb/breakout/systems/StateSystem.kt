@@ -14,8 +14,8 @@ class StateSystem @Inject constructor() : IteratingSystem(Family.all(BallCompone
     override fun processEntity(entity: Entity, deltaTime: Float) {
         val body = entity.getComponent(PhysicsComponent::class.java).body
         if (body.position.y < 0f) {
-            println("Game Over")
-            state = State.GameOver
+//            println("Game Over")
+//            state = State.GameOver
         }
     }
 }

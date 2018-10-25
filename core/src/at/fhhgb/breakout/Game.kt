@@ -56,9 +56,8 @@ open class Game : ApplicationAdapter() {
             body.setTransform(this.getComponent(TransformComponent::class.java).position, 0f)
             add(PhysicsComponent(body))
             val r  = Random()
-            val xImpulse = r.nextFloat() * 100000f - 50000f
-            println(xImpulse)
-            body.applyLinearImpulse(Vector2(xImpulse, 90000f), body.position, true)
+            val xVel = r.nextFloat() * 500f - 250f
+            body.setLinearVelocity(xVel,250f)
             add(BallComponent())
         })
     }
@@ -72,7 +71,7 @@ open class Game : ApplicationAdapter() {
             add(TransformComponent(Vector2(Gdx.graphics.width / 2f, 50f)))
 
             val body = world.createBody(BodyDef().also {
-                it.type = BodyDef.BodyType.StaticBody
+                it.type = BodyDef.BodyType.KinematicBody
             })
 
             val polyShape = PolygonShape().apply {
