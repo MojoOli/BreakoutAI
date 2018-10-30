@@ -3,6 +3,7 @@ package at.fhhgb.breakout
 import at.fhhgb.breakout.systems.StateSystem
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
+import com.badlogic.ashley.core.Family
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.Color
@@ -55,9 +56,7 @@ open class Game : ApplicationAdapter() {
             })
             body.setTransform(this.getComponent(TransformComponent::class.java).position, 0f)
             add(PhysicsComponent(body))
-            val r  = Random()
-            val xVel = r.nextFloat() * 500f - 250f
-            body.setLinearVelocity(xVel,250f)
+            body.setLinearVelocity(250f,250f)
             add(BallComponent())
         })
     }
@@ -147,11 +146,31 @@ open class Game : ApplicationAdapter() {
     }
 
     override fun render() {
-        if(engine.getSystem(StateSystem::class.java).state == State.Running) {
-            Gdx.gl.glClearColor(1f, 1f, 1f, 1f)
-            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-            engine.update(Gdx.graphics.deltaTime)
+        if(engine.getSystem(StateSystem::class.java).state != State.Running) {
+            engine.getSystem(StateSystem::class.java).state = State.Running
+            restart()
         }
+
+        Gdx.gl.glClearColor(1f, 1f, 1f, 1f)
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+        engine.update(Gdx.graphics.deltaTime)
+    }
+
+    private fun restart(){
+        val paddle = engine.getEntitiesFor(Family.all(PlayerComponent::class.java).get())[0]
+        paddle.getComponent(PhysicsComponent::class.java).body.setTransform(Vector2(Gdx.graphics.width / 2f, 50f),0f)
+        paddle.getComponent(PhysicsComponent::class.java).body.setLinearVelocity(0f,0f)
+
+        val ball = engine.getEntitiesFor(Family.all(BallComponent::class.java).get())[0]
+        ball.getComponent(PhysicsComponent::class.java).body.setTransform(Vector2(Gdx.graphics.width / 2f, 100f),0f)
+        ball.getComponent(PhysicsComponent::class.java).body.setLinearVelocity(250f,250f)
+
+        val bricks = engine.getEntitiesFor(Family.all(BricksComponent::class.java).get())
+        for (brick in bricks){
+            injector.getInstance(World::class.java).destroyBody(brick.getComponent(PhysicsComponent::class.java).body)
+            engine.removeEntity(brick)
+        }
+        createBricks()
     }
 
     override fun dispose() {

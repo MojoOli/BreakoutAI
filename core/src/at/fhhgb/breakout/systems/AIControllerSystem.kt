@@ -1,27 +1,40 @@
 package at.fhhgb.breakout.systems
 
-import at.fhhgb.breakout.PhysicsComponent
-import at.fhhgb.breakout.PlayerComponent
-import com.badlogic.ashley.core.Entity
+import at.fhhgb.breakout.*
+import com.badlogic.ashley.core.EntitySystem
 import com.badlogic.ashley.core.Family
-import com.badlogic.ashley.systems.IteratingSystem
 import com.google.inject.Inject
 
-class AIControllerSystem @Inject constructor() : IteratingSystem(Family.all(PlayerComponent::class.java).get()) {
-    private var stateSystem: StateSystem? = null
+class AIControllerSystem @Inject constructor() : EntitySystem() {
+    private var ballComponent: PhysicsComponent? = null
+    private var paddleComponent: PhysicsComponent? = null
 
-    override fun processEntity(entity: Entity, deltaTime: Float) {
-        if(stateSystem == null){
-            stateSystem = engine.getSystem(StateSystem::class.java)
+    private val qTable = QTable(16, 0.9f, 0.5f)
+
+    override fun update(deltaTime: Float) {
+        if(ballComponent == null || paddleComponent != null){
+            setupComponents()
         }
 
-        val paddle = entity.getComponent(PhysicsComponent::class.java).body
+        val action = qTable.update(ballComponent!!.body.position, paddleComponent!!.body.position.x)
 
-//        val velocityX = when {
-//            moveLeft -> -250f
-//            moveRight -> 250f
-//            else -> body.linearVelocity.x * 0.9f
-//        }
-//        body.setLinearVelocity(velocityX, 0f)
+        val velocityX = when (action) {
+            Action.Left -> -300f
+            Action.Right -> 300f
+            else -> paddleComponent!!.body.linearVelocity.x * 0.9f
+        }
+        paddleComponent!!.body.setLinearVelocity(velocityX, 0f)
+    }
+
+    private fun setupComponents(){
+        val entities = engine.getEntitiesFor(Family.one(PlayerComponent::class.java, BallComponent::class.java).get())
+
+        for (entity in entities) {
+            if (entity.getComponent(PlayerComponent::class.java) != null) {
+                paddleComponent = entity.getComponent(PhysicsComponent::class.java)
+            } else {
+                ballComponent = entity.getComponent(PhysicsComponent::class.java)
+            }
+        }
     }
 }
