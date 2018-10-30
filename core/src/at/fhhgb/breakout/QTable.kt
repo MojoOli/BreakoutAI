@@ -64,9 +64,9 @@ class QTable constructor(private val quantize: Int, private val learningRate: Fl
     }
 
     private fun getEstimatedFutureValue(action: Action, ballPosQuantized: Vector2, paddlePosQuantized: Int): Float {
-        val leftQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized  - (action.ordinal - 1))][Action.Left.ordinal]
-        val stayQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized  - (action.ordinal - 1))][Action.Stay.ordinal]
-        val rightQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized  - (action.ordinal - 1))][Action.Right.ordinal]
+        val leftQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized  + (action.ordinal - 1))][Action.Left.ordinal]
+        val stayQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized  + (action.ordinal - 1))][Action.Stay.ordinal]
+        val rightQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized  + (action.ordinal - 1))][Action.Right.ordinal]
 
         return if (leftQValue > rightQValue && leftQValue > stayQValue) {
             leftQValue
