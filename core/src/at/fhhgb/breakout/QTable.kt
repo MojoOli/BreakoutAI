@@ -8,12 +8,12 @@ class QTable constructor(private val quantize: Int, private val learningRate: Fl
     private val quantizeStepX = Gdx.graphics.width / quantize
     private val quantizeStepY = Gdx.graphics.height / quantize
     private var qTable: Array<FloatArray> = Array(quantize * quantize * quantize) { FloatArray(3) }
-
     private var exploration = 0.9f
 
-    fun update(ballPos: Vector2, paddlePosX: Float): Action {
+
+    fun update(ballPos: Vector2, paddlePos: Vector2, ballSize: SizeComponent, paddleSize: SizeComponent ): Action {
         val ballPosQuantized = getBallPosQuantized(ballPos)
-        val paddlePosQuantized = getPaddlePosQuantized(paddlePosX)
+        val paddlePosQuantized = getPaddlePosQuantized(paddlePos.x)
 
         val leftQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][Action.Left.ordinal]
         val rightQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][Action.Right.ordinal]
@@ -35,12 +35,22 @@ class QTable constructor(private val quantize: Int, private val learningRate: Fl
             Action.Stay
         }
 
+        checkBallCollideWithPaddle(ballPos, ballSize, paddlePos, paddleSize)
 
         qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][action.ordinal] = getQValue(action, ballPosQuantized, paddlePosQuantized)
 
-        println(qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][action.ordinal])
-
         return action
+    }
+
+    private fun checkBallCollideWithPaddle(ballPos: Vector2, ballSize: SizeComponent, paddlePos: Vector2, paddleSize: SizeComponent) {
+        val hitXRight = ballPos.x - ballSize.width / 2 < paddlePos.x + paddleSize.width / 2
+        val hitXLeft = ballPos.x + ballSize.width / 2 > paddlePos.x - paddleSize.width / 2
+        val hitYUp = ballPos.y - ballSize.height < paddlePos.y + paddleSize.height / 2 + 4
+        val hitYDown = ballPos.y - ballSize.height > paddlePos.y + paddleSize.height / 2
+
+        if (hitXRight && hitXLeft && hitYUp && hitYDown) {
+            println("hit")
+        }
     }
 
     private fun getQValue(action: Action, ballPosQuantized: Vector2, paddlePosQuantized: Int): Float {
