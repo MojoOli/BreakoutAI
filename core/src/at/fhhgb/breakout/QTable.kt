@@ -2,25 +2,28 @@ package at.fhhgb.breakout
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.math.Vector2
+import java.util.*
 
 class QTable constructor(private val quantize: Int, private val learningRate: Float, private val discountFactor: Float) {
     private val quantizeStepX = Gdx.graphics.width / quantize
     private val quantizeStepY = Gdx.graphics.height / quantize
     private var qTable: Array<FloatArray> = Array(quantize * quantize * quantize) { FloatArray(3) }
 
-    fun update(ballPos: Vector2, paddlePosX: Float):Action {
+    fun update(ballPos: Vector2, paddlePosX: Float): Action {
         val ballPosQuantized = getBallPosQuantized(ballPos)
         val paddlePosQuantized = getPaddlePosQuantized(paddlePosX)
 
-        val leftQValue = getQValue(Action.Left, ballPosQuantized, paddlePosQuantized)
-        val rightQValue = getQValue(Action.Right, ballPosQuantized, paddlePosQuantized)
-        val stayQValue = getQValue(Action.Stay, ballPosQuantized, paddlePosQuantized)
 
-        qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][Action.Left.ordinal] = leftQValue
-        qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][Action.Stay.ordinal] = stayQValue
-        qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][Action.Right.ordinal] = rightQValue
+        val leftQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][Action.Left.ordinal]
+        val rightQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][Action.Right.ordinal]
+        val stayQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][Action.Stay.ordinal]
 
-        return if (leftQValue > rightQValue && leftQValue > stayQValue) {
+        val random = Random()
+        val randomAction = (random.nextFloat() * 3).toInt()
+
+        val action = if (leftQValue == rightQValue && leftQValue == stayQValue) {
+            Action.getAction(randomAction)
+        } else if (leftQValue > rightQValue && leftQValue > stayQValue) {
             Action.Left
         } else if (rightQValue > leftQValue && rightQValue > stayQValue) {
             Action.Right
@@ -28,6 +31,12 @@ class QTable constructor(private val quantize: Int, private val learningRate: Fl
             Action.Stay
         }
 
+
+        qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][action.ordinal] = getQValue(action, ballPosQuantized, paddlePosQuantized)
+
+        println(qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized)][action.ordinal])
+
+        return action
     }
 
     private fun getQValue(action: Action, ballPosQuantized: Vector2, paddlePosQuantized: Int): Float {
@@ -47,16 +56,15 @@ class QTable constructor(private val quantize: Int, private val learningRate: Fl
     }
 
     private fun getReward(ballPosQuantized: Vector2, paddlePosQuantized: Int): Float {
-        if(ballPosQuantized.y <= 0){
+        if (ballPosQuantized.y <= 0) {
             return -1000f
         }
 
-        var distance = ballPosQuantized.x - paddlePosQuantized
-        if (distance > 0f) {
-            distance *= -1f
+        if(paddlePosQuantized == ballPosQuantized.x.toInt() && ballPosQuantized.y.toInt() == 1){
+            return 1000f
         }
 
-        return distance
+        return 0f
     }
 
     private fun getQTablePosition(ballPosQuantized: Vector2, paddlePosQuantized: Int): Int {
@@ -64,9 +72,9 @@ class QTable constructor(private val quantize: Int, private val learningRate: Fl
     }
 
     private fun getEstimatedFutureValue(action: Action, ballPosQuantized: Vector2, paddlePosQuantized: Int): Float {
-        val leftQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized  + (action.ordinal - 1))][Action.Left.ordinal]
-        val stayQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized  + (action.ordinal - 1))][Action.Stay.ordinal]
-        val rightQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized  + (action.ordinal - 1))][Action.Right.ordinal]
+        val leftQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized + (action.ordinal - 1))][Action.Left.ordinal]
+        val stayQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized + (action.ordinal - 1))][Action.Stay.ordinal]
+        val rightQValue = qTable[getQTablePosition(ballPosQuantized, paddlePosQuantized + (action.ordinal - 1))][Action.Right.ordinal]
 
         return if (leftQValue > rightQValue && leftQValue > stayQValue) {
             leftQValue
@@ -81,5 +89,14 @@ class QTable constructor(private val quantize: Int, private val learningRate: Fl
 enum class Action {
     Left,
     Stay,
-    Right
+    Right;
+    companion object {
+        fun getAction(action: Int): Action {
+            return when (action) {
+                0 -> Left
+                1 -> Stay
+                else -> Right
+            }
+        }
+    }
 }
