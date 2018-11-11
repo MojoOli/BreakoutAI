@@ -15,12 +15,16 @@ class SizeComponent(val width: Float, val height: Float) : Component
 
 class PhysicsComponent(val body: Body) : Component
 
-class ShapeComponent(val shape: Shape.Type) : Component
+class RenderComponent(val renderType: RenderType) : Component
 
 class PlayerComponent : Component
 
-class CollisionComponent(var collisionEntity:Entity) : Component
-
 class BallComponent : Component
 
-class BricksComponent : Component
+class BricksComponent(var alive: Boolean = true) : Component
+
+enum class RenderType{
+    Paddle,
+    Brick,
+    Ball
+}

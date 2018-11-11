@@ -1,5 +1,6 @@
 package at.fhhgb.breakout
 
+import at.fhhgb.breakout.systems.AIControllerSystem
 import at.fhhgb.breakout.systems.StateSystem
 import com.badlogic.ashley.core.Engine
 import com.badlogic.ashley.core.Entity
@@ -25,7 +26,7 @@ open class Game : ApplicationAdapter() {
         injector = Guice.createInjector(GameModule(this))
         injector.getInstance(Systems::class.java).list.map { injector.getInstance(it) }.forEach { engine.addSystem(it) }
 
-        createBricks()
+//        createBricks()
         createBall()
         createPaddle()
         createWall()
@@ -36,7 +37,7 @@ open class Game : ApplicationAdapter() {
         engine.addEntity(Entity().apply {
             add(ColorComponent(Color.BLACK))
             add(SizeComponent(20f, 20f))
-            add(ShapeComponent(Shape.Type.Circle))
+            add(RenderComponent(RenderType.Ball))
             add(TransformComponent(Vector2(Gdx.graphics.width / 2f, 100f)))
 
             val body = world.createBody(BodyDef().also {
@@ -56,17 +57,19 @@ open class Game : ApplicationAdapter() {
             })
             body.setTransform(this.getComponent(TransformComponent::class.java).position, 0f)
             add(PhysicsComponent(body))
-            body.setLinearVelocity(250f,250f)
+
+            body.setLinearVelocity(Random().nextFloat() * 500f - 250f, 500f)
             add(BallComponent())
         })
     }
 
     private fun createPaddle() {
         val world = injector.getInstance(World::class.java)
+
         engine.addEntity(Entity().apply {
             add(ColorComponent(Color.ORANGE))
             add(SizeComponent(100f, 20f))
-            add(ShapeComponent(Shape.Type.Polygon))
+            add(RenderComponent(RenderType.Paddle))
             add(TransformComponent(Vector2(Gdx.graphics.width / 2f, 50f)))
 
             val body = world.createBody(BodyDef().also {
@@ -96,7 +99,7 @@ open class Game : ApplicationAdapter() {
                 engine.addEntity(Entity().apply {
                     add(ColorComponent(Color.BLACK))
                     add(SizeComponent(50f, 20f))
-                    add(ShapeComponent(Shape.Type.Polygon))
+                    add(RenderComponent(RenderType.Brick))
                     add(TransformComponent(Vector2(50f + 60f * j, 400f - i * 30f)))
 
                     val body = world.createBody(BodyDef().also {
@@ -146,7 +149,7 @@ open class Game : ApplicationAdapter() {
     }
 
     override fun render() {
-        if(engine.getSystem(StateSystem::class.java).state != State.Running) {
+        if (engine.getSystem(StateSystem::class.java).state != State.Running) {
             engine.getSystem(StateSystem::class.java).state = State.Running
             restart()
         }
@@ -154,26 +157,29 @@ open class Game : ApplicationAdapter() {
         Gdx.gl.glClearColor(1f, 1f, 1f, 1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
         engine.update(Gdx.graphics.deltaTime)
+//        engine.update(5f)
     }
 
-    private fun restart(){
-        val paddle = engine.getEntitiesFor(Family.all(PlayerComponent::class.java).get())[0]
-        paddle.getComponent(PhysicsComponent::class.java).body.setTransform(Vector2(Gdx.graphics.width / 2f, 50f),0f)
-        paddle.getComponent(PhysicsComponent::class.java).body.setLinearVelocity(0f,0f)
+    private fun restart() {
+        val paddle = engine.getEntitiesFor(Family.all(PlayerComponent::class.java, PhysicsComponent::class.java).get())[0]
+        paddle.getComponent(PhysicsComponent::class.java).body.setTransform(Vector2(Gdx.graphics.width / 2f, 50f), 0f)
+        paddle.getComponent(PhysicsComponent::class.java).body.setLinearVelocity(0f, 0f)
 
-        val ball = engine.getEntitiesFor(Family.all(BallComponent::class.java).get())[0]
-        ball.getComponent(PhysicsComponent::class.java).body.setTransform(Vector2(Gdx.graphics.width / 2f, 100f),0f)
-        ball.getComponent(PhysicsComponent::class.java).body.setLinearVelocity(250f,250f)
+        val ball = engine.getEntitiesFor(Family.all(BallComponent::class.java, PhysicsComponent::class.java).get())[0]
+        ball.getComponent(PhysicsComponent::class.java).body.setTransform(Vector2(Gdx.graphics.width / 2f, 100f), 0f)
+        ball.getComponent(PhysicsComponent::class.java).body.setLinearVelocity(Random().nextFloat() * 600f - 300f, 500f)
 
-        val bricks = engine.getEntitiesFor(Family.all(BricksComponent::class.java).get())
-        for (brick in bricks){
-            injector.getInstance(World::class.java).destroyBody(brick.getComponent(PhysicsComponent::class.java).body)
-            engine.removeEntity(brick)
+        val bricks = engine.getEntitiesFor(Family.all(BricksComponent::class.java, PhysicsComponent::class.java).get())
+        for (brick in bricks) {
+            brick.getComponent(PhysicsComponent::class.java).body.isActive = true
+            brick.getComponent(BricksComponent::class.java).alive = true
         }
-        createBricks()
+
+        engine.getSystem(AIControllerSystem::class.java).environment.restart()
     }
 
     override fun dispose() {
+        engine.getSystem(AIControllerSystem::class.java).environment.saveQTable()
         batch.dispose()
     }
 }

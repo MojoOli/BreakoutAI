@@ -60,5 +60,6 @@ project(":core") {
         compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
         compile "com.google.inject:guice:4.2.1"
         compile "com.badlogicgames.ashley:ashley:1.7.0"
+        implementation 'com.google.code.gson:gson:2.8.5'
     }
 }
