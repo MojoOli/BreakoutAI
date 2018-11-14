@@ -11,7 +11,7 @@ import java.util.*
 
 class Agent(private val quantize: Int, private val learningRate: Float, private val discountFactor: Float) {
     private var qTable: Array<Array<Array<Array<FloatArray>>>> = Array(quantize) { Array(quantize) { Array(5) { Array(quantize) { FloatArray(3) } } } }
-    private var exploration = 0.1f
+    private var exploration = 0.9f
     private var oldState: State? = null
     private var oldAction: Action = Action.Stay
 
@@ -85,11 +85,11 @@ class Agent(private val quantize: Int, private val learningRate: Float, private 
         println("Score: $score, Exploration: $exploration")
         score = 0f
         if (exploration > 0.01f)
-            exploration -= 0.001f
+            exploration -= 0.0001f
     }
 
     fun saveQTable() {
-        FileWriter("qtable.json").use {
+        FileWriter("./qtable.json").use {
             val gson = GsonBuilder().create()
             gson.toJson(qTable, it)
         }

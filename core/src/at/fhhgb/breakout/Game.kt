@@ -20,6 +20,7 @@ open class Game : ApplicationAdapter() {
     lateinit var batch: SpriteBatch
     var engine = Engine()
     private lateinit var injector: Injector
+    private val train = false
 
     override fun create() {
         batch = SpriteBatch()
@@ -30,6 +31,10 @@ open class Game : ApplicationAdapter() {
         createBall()
         createPaddle()
         createWall()
+
+        if (train) {
+            simulate()
+        }
     }
 
     private fun createBall() {
@@ -42,7 +47,7 @@ open class Game : ApplicationAdapter() {
 
             val body = world.createBody(BodyDef().also {
                 it.type = BodyDef.BodyType.DynamicBody
-
+                it.bullet = true
             })
 
             val circleShape = CircleShape().apply {
@@ -122,9 +127,9 @@ open class Game : ApplicationAdapter() {
             it.type = BodyDef.BodyType.StaticBody
         })
 
-        body.setTransform(Vector2(0f, Gdx.graphics.height.toFloat()), 0f)
+        body.setTransform(Vector2(0f, Gdx.graphics.height.toFloat() + 100f), 0f)
         body.createFixture(PolygonShape().apply {
-            setAsBox(Gdx.graphics.width.toFloat(), 0f)
+            setAsBox(Gdx.graphics.width.toFloat(), 100f)
         }, 1.0f)
 
         // Left
@@ -132,9 +137,9 @@ open class Game : ApplicationAdapter() {
             it.type = BodyDef.BodyType.StaticBody
         })
 
-        bodyLeft.setTransform(Vector2(0f, Gdx.graphics.height.toFloat()), 0f)
+        bodyLeft.setTransform(Vector2(-100f, Gdx.graphics.height.toFloat()), 0f)
         bodyLeft.createFixture(PolygonShape().apply {
-            setAsBox(0f, Gdx.graphics.height.toFloat())
+            setAsBox(100f, Gdx.graphics.height.toFloat())
         }, 1.0f)
 
         // Right
@@ -142,22 +147,35 @@ open class Game : ApplicationAdapter() {
             it.type = BodyDef.BodyType.StaticBody
         })
 
-        bodyRight.setTransform(Vector2(Gdx.graphics.width.toFloat(), 0f), 0f)
+        bodyRight.setTransform(Vector2(Gdx.graphics.width.toFloat() + 100f, 0f), 0f)
         bodyRight.createFixture(PolygonShape().apply {
-            setAsBox(0f, Gdx.graphics.height.toFloat())
+            setAsBox(100f, Gdx.graphics.height.toFloat())
         }, 1.0f)
     }
 
-    override fun render() {
-        if (engine.getSystem(StateSystem::class.java).state != State.Running) {
-            engine.getSystem(StateSystem::class.java).state = State.Running
-            restart()
-        }
+    private fun simulate() {
+        for (i in (0..100000)) {
+            if (engine.getSystem(StateSystem::class.java).state != State.Running) {
+                println("" + (i / 100000f) * 100f + "%")
+                engine.getSystem(StateSystem::class.java).state = State.Running
+                restart()
+            }
 
-        Gdx.gl.glClearColor(1f, 1f, 1f, 1f)
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        engine.update(Gdx.graphics.deltaTime)
-//        engine.update(5f)
+            engine.update(5f)
+        }
+    }
+
+    override fun render() {
+        if (!train) {
+            if (engine.getSystem(StateSystem::class.java).state != State.Running) {
+                engine.getSystem(StateSystem::class.java).state = State.Running
+                restart()
+            }
+
+            Gdx.gl.glClearColor(1f, 1f, 1f, 1f)
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+            engine.update(0.08f)
+        }
     }
 
     private fun restart() {

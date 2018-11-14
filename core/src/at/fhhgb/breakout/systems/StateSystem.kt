@@ -17,5 +17,9 @@ class StateSystem @Inject constructor() : IteratingSystem(Family.all(BallCompone
         if(body.position.y < 0){
             state = State.GameOver
         }
+
+        if(body.linearVelocity.y in 1f..-1f){
+            state = State.Restart
+        }
     }
 }
